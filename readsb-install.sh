@@ -1,4 +1,6 @@
 #!/bin/bash
+# Repurposed to play with READSB installation onto a Docker container
+# Ramon F Kolb / 27 Jan 2021
 repository="https://github.com/wiedehopf/readsb.git"
 
 renice 10 $$
@@ -79,8 +81,9 @@ echo "Package installed!"
 
 cp -n debian/lighttpd/* /etc/lighttpd/conf-available
 
-systemctl stop fr24feed &>/dev/null
-systemctl stop rb-feeder &>/dev/null
+# No systemd in docker:
+# systemctl stop fr24feed &>/dev/null
+# systemctl stop rb-feeder &>/dev/null
 
 apt-get remove -y dump1090-mutability &>/dev/null
 apt-get remove -y dump1090 &>/dev/null
@@ -96,7 +99,7 @@ if [[ -f /etc/rbfeeder.ini ]]; then
     then
         sed -i -e 's/network_mode=false/network_mode=true/' /etc/rbfeeder.ini
     fi
-    systemctl restart rbfeeder &>/dev/null
+    # systemctl restart rbfeeder &>/dev/null
 fi
 
 # configure fr24feed to use readsb
@@ -114,8 +117,8 @@ if (( $(cat /etc/lighttpd/conf-enabled/* | grep -c -E -e '^server.stat-cache-eng
     rm -f /etc/lighttpd/conf-enabled/88-readsb-statcache.conf
 fi
 
-systemctl enable readsb
-systemctl restart readsb
+# systemctl enable readsb
+# systemctl restart readsb
 
 # script to change gain
 
@@ -171,7 +174,7 @@ if ! grep -e '--lon' /etc/default/readsb &>/dev/null; then sed -i -e 's/DECODER_
 if ! grep -e '--lat' /etc/default/readsb &>/dev/null; then sed -i -e 's/DECODER_OPTIONS="/DECODER_OPTIONS="--lat 51.52830 /' /etc/default/readsb; fi
 sed -i -E -e "s/--lat .?[0-9]*.?[0-9]* /--lat $lat /" /etc/default/readsb
 sed -i -E -e "s/--lon .?[0-9]*.?[0-9]* /--lon $lon /" /etc/default/readsb
-systemctl restart readsb
+# systemctl restart readsb
 EOF
 chmod a+x /usr/local/bin/readsb-set-location
 
